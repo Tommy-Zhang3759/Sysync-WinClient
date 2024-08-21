@@ -3,6 +3,7 @@ import win32service
 import win32event
 import servicemanager
 import os
+import sys
 import logging
 import traceback
 
@@ -10,10 +11,9 @@ import threading
 
 import json
 
-
 from commu import *
 
-SETTINGS_FILE = "setting.json"
+SETTINGS_FILE = r"C:\Users\tommyzhang\Documents\Projects\Sysync\WinClient\setting.json"
 
 class SysyncWinClient(win32serviceutil.ServiceFramework):
 	_svc_name_ = "SysyncWinClient"
@@ -26,42 +26,116 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 	_resident_socket_ = None
 
 	_local_broad_cast_port_ = -1
-
+	_debug_mode_ = False
 
 	_setting_keys_ = ["server_ip", "broad_cast_port"]
 
 	def __init__(self, args):
-		win32serviceutil.ServiceFramework.__init__(self, args)
+		if args == "debug":
+			self._debug_mode_ = True
+		
+		if self._debug_mode_ != True:
+			win32serviceutil.ServiceFramework.__init__(self, args)
 		self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
 		self.is_running = True
-		self.ReadSettings(SETTINGS_FILE)
-		self.NetInit()
+
+		logging.basicConfig(
+            filename=r"C:\Users\tommyzhang\Documents\Projects\Sysync\WinClient\log.txt",
+            level=logging.DEBUG,
+            format='%(asctime)s - %(levelname)s - %(message)s'
+        )
 		
+
+
 	def ReadSettings(self, path):
-		with open(path, 'r') as f:
-			settings = json.load()
+		try:
+			f = open(path, 'r')
+			settings = json.load(f)
+		except Exception as e:
+			logging.error("An error occurred: Can not find setting config file")
+			logging.error(traceback.format_exc())
+			self.SvcStop()
+			raise e
 		try:
 			self._server_ip_ = settings['sesrver_ip']
 			self._server_broad_cast_port_ = settings["server_broad_cast_port"]
 			self._server_resident_port_ = settings["server_resident_port"]
 			self._local_broad_cast_port_ = settings["local_broad_cast_port"]
-		except:
-			raise NameError
+		except Exception as e:
+			logging.error("An error occurred: Can not find basic configurations")
+			logging.error(traceback.format_exc())
+			self.SvcStop()
+			raise e 
+		logging.info("Read settings succussfully")
+		return True
+
+	def ConnectServer(self):
+		import modify_host_name
+		try:
+			mac, cip, cname = modify_host_name.get_device_info() 
+		except Exception as e:
+			self.SvcStop()
+
+		req = {
+			"f_name": "init_connect",
+			"mac": mac,
+			"ip": cip,
+			"host_name": cname
+		}
+
+		send_req(self._resident_socket_, req)
+		return
+	
+	def DisonnectServer(self):
+		import modify_host_name
+		try:
+			mac, cip, cname = modify_host_name.get_device_info() 
+		except Exception as e:
+			self.SvcStop()
+
+		req = {
+			"f_name": "disconnect",
+			"mac": mac,
+			"ip": cip,
+			"host_name": cname
+		}
+
+		send_req(self._resident_socket_, req)
+		return
 		
 	def NetInit(self):
-		self._resident_socket_ = create_client_socket(self._server_ip_, self._server_resident_port_)
+		try:
+			self._resident_socket_ = create_client_socket()
+			self._resident_socket_.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+			self._resident_socket_.connect((self._server_ip_, self._server_resident_port_))
+
+			logging.info("Connected to %s" %(self._server_resident_port_))
+			logging.info(traceback.format_exc())
+		except Exception as e:
+			logging.error("An error occurred: Can not creat resident socket")
+			logging.error(traceback.format_exc())
 		return 
 	
 	def SvcStop(self):
-		self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+		if self._debug_mode_ != True:
+			self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
 		win32event.SetEvent(self.hWaitStop)
 		self.is_running = False
-		self._resident_socket_.close()
+		try:
+			self._resident_socket_.close()
+		except:
+			pass
+		return
 
 	def SvcDoRun(self):
 		servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
 							  servicemanager.PYS_SERVICE_STARTED,
 							  (self._svc_name_, ''))
+		logging.info("Starting")
+		if self.ReadSettings(SETTINGS_FILE):
+			self.NetInit()
+
+		self.ConnectServer()
 		self.main()
 
 	def EventHandler(self, mess):
@@ -78,22 +152,7 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 					case "net":
 						pass
 					case "host_name":
-						try: 
-							stat = modify_host_name.req_host_name(self._resident_socket_)
-							mac, cip, cname = modify_host_name.get_device_info() 
-							resp = {
-								"status": stat,
-								"mac": mac,
-								"ip": cip,
-								"cname": cname
-								}
-						except OSError as e:
-							resp = {
-								"status": -1,
-								"error": "Can not open the regedit to modify host name"
-								}
-							logging.error("An error occurred: Can not open the regedit to modify host name")
-							logging.error(traceback.format_exc())
+						modify_host_name.req_host_name(self._resident_socket_)
 					case "collect_input":
 						pass
 					case _:
@@ -110,6 +169,7 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 				}
 			logging.error("An error occurred: Can not find key: f_name")
 			logging.error(traceback.format_exc())
+			send_mess(self._resident_socket_, resp)
 		except Exception as e:
 			resp = {
 				"status": -1,
@@ -117,9 +177,7 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 				}
 			logging.error("Unexpected error: %s", str(e))
 			logging.error(traceback.format_exc())
-		finally:
 			send_mess(self._resident_socket_, resp)
-			return
 
 	def EventListener(self):
 		self._resident_socket_.settimeout = None
@@ -144,4 +202,14 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 
 
 if __name__ == '__main__':
-	win32serviceutil.HandleCommandLine(SysyncWinClient)
+    # 当作为服务运行时
+    if len(sys.argv) != 1:
+        win32serviceutil.HandleCommandLine(SysyncWinClient)
+    else:
+        # 以本地方式调试
+        service = SysyncWinClient('debug')
+        service.SvcDoRun()  # 直接调用服务的运行逻辑
+
+# 你可以在这里直接调用测试代码，比如：
+# service = SysyncWinClient('debug')
+# service.SvcDoRun()

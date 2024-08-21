@@ -37,22 +37,3 @@ def handle_client_connection(client_socket, client_address):
     # 关闭与客户端的连接
     client_socket.close()
 
-def main():
-    server_ip = '0.0.0.0'  # 服务器的 IP 地址
-    server_port = 65432       # 服务器的端口
-    
-    server_socket = create_server_socket(server_ip, server_port)
-    
-    try:
-        while True:
-            # 接受一个新的连接
-            client_socket, client_address = server_socket.accept()
-            
-            # 处理客户端的连接
-            handle_client_connection(client_socket, client_address)
-    finally:
-        # 关闭服务器套接字
-        server_socket.close()
-
-if __name__ == '__main__':
-    main()
