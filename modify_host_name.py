@@ -52,21 +52,3 @@ def req_host_name(client_socket):
         raise e
     
     return 0
-
-def auto_req(socket):
-    try: 
-        stat = req_host_name(socket)
-        mac, cip, cname = get_device_info() 
-        resp = {
-            "status": stat,
-            "mac": mac,
-            "ip": cip,
-            "host_name": cname
-            }
-    except OSError as e:
-        resp = {
-            "status": -1,
-            "error": "Can not open the regedit to modify host name"
-            }
-        logging.error("An error occurred: Can not open the regedit to modify host name")
-        logging.error(traceback.format_exc())

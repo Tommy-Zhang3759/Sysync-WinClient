@@ -15,12 +15,11 @@ def create_client_socket():
     return client_socket
 
 def send_req(client_socket, request_message):
-    try:
-        request_message = json.dumps(request_message)
-        client_socket.send(request_message.encode('utf-8'))
-        # client_socket.settimeout(10)  # 设置 10 秒超时
+    send_mess(client_socket, request_message)
+    return recv_mess(client_socket)
 
-        # 假设服务器使用换行符 `\n` 作为消息结束标识符
+def recv_mess(client_socket):
+    try:
         response = ""
         while True:
             part = client_socket.recv(1024).decode('utf-8')
@@ -28,9 +27,11 @@ def send_req(client_socket, request_message):
             if "\n" in part:  # 检测到结束符
                 break
         
+        # 去除结束符
+        response = response.replace("\n", "")
         resp = json.loads(response.strip())
     except Exception as e:
-        logging.error("An error occurred: Can not find basic configurations")
+        logging.error("An error occurred: " + e)
         logging.error(traceback.format_exc())
         raise e
     
@@ -38,9 +39,9 @@ def send_req(client_socket, request_message):
 
 def send_mess(client_socket, message):
     try:
-        message = json.dumps(message)
+        message = json.dumps(message) + "\n"
         client_socket.sendall(message.encode('utf-8'))
     except Exception as e:
+        logging.error("An error occurred: " + e)
+        logging.error(traceback.format_exc())
         raise e
-
-    return 0

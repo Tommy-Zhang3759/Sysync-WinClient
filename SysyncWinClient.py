@@ -77,7 +77,7 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 			self.SvcStop()
 
 		req = {
-			"f_name": "init_connect",
+			"f_name": "connect_resident_socket",
 			"mac": mac,
 			"ip": cip,
 			"host_name": cname
@@ -94,7 +94,7 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 			self.SvcStop()
 
 		req = {
-			"f_name": "disconnect",
+			"f_name": "disconnect_resident_socket",
 			"mac": mac,
 			"ip": cip,
 			"host_name": cname
@@ -180,10 +180,9 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 			send_mess(self._resident_socket_, resp)
 
 	def EventListener(self):
-		self._resident_socket_.settimeout = None
+		self._resident_socket_.settimeout(None)
 		while self.is_running:
-			mess = self._resident_socket_.recv(NET_BUFFER_SIZE)
-			mess = json.loads(mess.decode("utf-8"))
+			mess = recv_mess(self._resident_socket_)
 			t = threading.Thread(target=self.EventHandler, kwargs=mess)
 			t.start()
 		return
