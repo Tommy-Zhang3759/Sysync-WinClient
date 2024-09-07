@@ -7,28 +7,34 @@ import sys
 import logging
 import traceback
 
-import threading
-
 import json
 
-from commu import *
+import APIService.APIGateway
+import functions.modify_host_name
 
-SETTINGS_FILE = r"C:\Users\tommyzhang\Documents\Projects\Sysync\WinClient\setting.json"
+SETTINGS_FILE = "./setting.json"
+
+DEBUG_MODE = True
 
 class SysyncWinClient(win32serviceutil.ServiceFramework):
 	_svc_name_ = "SysyncWinClient"
 	_svc_display_name_ = "Sysync"
 	_svc_description_ = "Sysync Windows client background resident service"
 
-	_server_ip_ = ""
-	_server_broad_cast_port_ = -1
-	_server_resident_port_ = -1
+	_server_ip_: str = "127.0.0.1"
+	_server_port_: int = -1
+	_local_ip_: str = "0.0.0.0"
+	_local_port_ = 6003
 	_resident_socket_ = None
 
-	_local_broad_cast_port_ = -1
 	_debug_mode_ = False
 
-	_setting_keys_ = ["server_ip", "broad_cast_port"]
+	_setting_keys_ = [
+		"server_ip", 
+		"server_port", 
+		"local_ip",
+		"local_port"
+	]
 
 	def __init__(self, args):
 		if args == "debug":
@@ -37,84 +43,41 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 		if self._debug_mode_ != True:
 			win32serviceutil.ServiceFramework.__init__(self, args)
 		self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
+
 		self.is_running = True
 
 		logging.basicConfig(
-            filename=r"C:\Users\tommyzhang\Documents\Projects\Sysync\WinClient\log.txt",
+            filename="./log.txt",
             level=logging.DEBUG,
             format='%(asctime)s - %(levelname)s - %(message)s'
         )
-		
-
+		self.ReadSettings(SETTINGS_FILE)
 
 	def ReadSettings(self, path):
 		try:
-			f = open(path, 'r')
-			settings = json.load(f)
+			with open(path, 'r') as f:
+				settings = json.load(f)
 		except Exception as e:
-			logging.error("An error occurred: Can not find setting config file")
-			logging.error(traceback.format_exc())
+			logging.error("Can not open config file")
 			self.SvcStop()
 			raise e
+		
+		i = 0
 		try:
-			self._server_ip_ = settings['sesrver_ip']
-			self._server_broad_cast_port_ = settings["server_broad_cast_port"]
-			self._server_resident_port_ = settings["server_resident_port"]
-			self._local_broad_cast_port_ = settings["local_broad_cast_port"]
+			self._server_ip_ = settings['server_ip']; i += 1
+			self._server_port_ = settings["server_port"]; i += 1
+			self._local_ip_ = settings["local_ip"]; i += 1
+			self._local_port_ = settings["local_port"]; i += 1
+		except KeyError:
+			logging.error(f"Can not find setting key: {self._setting_keys_[i]}")
+			self.SvcStop()
 		except Exception as e:
-			logging.error("An error occurred: Can not find basic configurations")
-			logging.error(traceback.format_exc())
+			logging.error("Unexpected Error")
+			logging.debug(traceback.format_exc())
 			self.SvcStop()
 			raise e 
-		logging.info("Read settings succussfully")
+		logging.info("Read settings: Success")
 		return True
-
-	def ConnectServer(self):
-		import modify_host_name
-		try:
-			mac, cip, cname = modify_host_name.get_device_info() 
-		except Exception as e:
-			self.SvcStop()
-
-		req = {
-			"f_name": "connect_resident_socket",
-			"mac": mac,
-			"ip": cip,
-			"host_name": cname
-		}
-
-		send_req(self._resident_socket_, req)
-		return
-	
-	def DisonnectServer(self):
-		import modify_host_name
-		try:
-			mac, cip, cname = modify_host_name.get_device_info() 
-		except Exception as e:
-			self.SvcStop()
-
-		req = {
-			"f_name": "disconnect_resident_socket",
-			"mac": mac,
-			"ip": cip,
-			"host_name": cname
-		}
-
-		send_req(self._resident_socket_, req)
-		return
-		
-	def NetInit(self):
-		try:
-			self._resident_socket_ = create_client_socket()
-			self._resident_socket_.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-			self._resident_socket_.connect((self._server_ip_, self._server_resident_port_))
-
-			logging.info("Connected to %s" %(self._server_resident_port_))
-			logging.info(traceback.format_exc())
-		except Exception as e:
-			logging.error("An error occurred: Can not creat resident socket")
-			logging.error(traceback.format_exc())
-		return 
 	
 	def SvcStop(self):
 		if self._debug_mode_ != True:
@@ -132,77 +95,30 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 							  servicemanager.PYS_SERVICE_STARTED,
 							  (self._svc_name_, ''))
 		logging.info("Starting")
-		if self.ReadSettings(SETTINGS_FILE):
-			self.NetInit()
+		# if self.ReadSettings(SETTINGS_FILE):
+			# self.NetInit()
 
-		self.ConnectServer()
+		# self.ConnectServer()
 		self.main()
 
-	def EventHandler(self, mess):
-		import collect_info
-		import modify_host_name
-		import modify_net
-		import modify_reg
-		try:
-			match mess['f_name']:
-					case "reg":
-						pass
-					case "setting":
-						pass
-					case "net":
-						pass
-					case "host_name":
-						modify_host_name.req_host_name(self._resident_socket_)
-					case "collect_input":
-						pass
-					case _:
-						resp = {
-							"status": -1, 
-			  				"error": "Unexpected function name"
-							}
-						logging.error("An error occurred: Unexpected function name")
-						logging.error(traceback.format_exc())
-		except KeyError as e:
-			resp = {
-				"status": -1,
-				"error": "Can not find key: f_name"
-				}
-			logging.error("An error occurred: Can not find key: f_name")
-			logging.error(traceback.format_exc())
-			send_mess(self._resident_socket_, resp)
-		except Exception as e:
-			resp = {
-				"status": -1,
-				"unexpected error": str(e)
-				}
-			logging.error("Unexpected error: %s", str(e))
-			logging.error(traceback.format_exc())
-			send_mess(self._resident_socket_, resp)
-
-	def EventListener(self):
-		self._resident_socket_.settimeout(None)
-		while self.is_running:
-			mess = recv_mess(self._resident_socket_)
-			t = threading.Thread(target=self.EventHandler, kwargs=mess)
-			t.start()
-		return
-
 	def main(self):
-		eventListener = threading.Thread(target=self.EventListener)
-		eventListener.start()
+		gateway_thread = APIService.APIGateway.UDPGatewayThread(self._local_ip_, self._local_port_)
+		gateway_thread.add_worker(functions.modify_host_name.host_name_offer())
+		gateway_thread.add_worker(functions.modify_host_name.update_host_name())
+		gateway_thread.start()
+
 		while self.is_running:
 			try:
 				pass
 
 			except Exception as e:
 				logging.error("An error occurred: %s", str(e))
-				logging.error(traceback.format_exc())
-		eventListener.join()
-
+				logging.debug(traceback.format_exc())
+		# eventListener.join()
 
 if __name__ == '__main__':
     # 当作为服务运行时
-    if len(sys.argv) != 1:
+    if DEBUG_MODE == False:
         win32serviceutil.HandleCommandLine(SysyncWinClient)
     else:
         # 以本地方式调试
