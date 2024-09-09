@@ -10,6 +10,7 @@ import traceback
 import json
 
 import APIService.APIGateway
+import functions.api_workers
 import functions.modify_host_name
 
 SETTINGS_FILE = "./setting.json"
@@ -103,8 +104,14 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 
 	def main(self):
 		gateway_thread = APIService.APIGateway.UDPGatewayThread(self._local_ip_, self._local_port_)
-		gateway_thread.add_worker(functions.modify_host_name.host_name_offer())
-		gateway_thread.add_worker(functions.modify_host_name.update_host_name())
+		gateway_thread.add_worker(functions.api_workers.host_name_offer())
+		gateway_thread.add_worker(functions.api_workers.update_host_name())
+		gateway_thread.add_worker(functions.api_workers.net_ip_dhcp())
+		gateway_thread.add_worker(functions.api_workers.run_cmd())
+		gateway_thread.add_worker(functions.api_workers.net_ip_static())
+		gateway_thread.add_worker(functions.api_workers.net_dns_static())
+
+
 		gateway_thread.start()
 
 		while self.is_running:

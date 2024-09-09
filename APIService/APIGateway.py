@@ -11,7 +11,6 @@ SERVER_PORT = 6004
 # 定义子线程类，每个子线程有一个对应的队列来接收数据
 class UDPAPIWorker():
     def __init__(self):
-        super().__init__()
         self.name: str = None
         self.message_queue = queue.Queue()  # 每个线程都有自己的队列
         self.running: bool = True
@@ -59,17 +58,13 @@ class UDPGatewayThread(threading.Thread):
     def run(self):
         try:
             self.gateway_rec_sock.bind((self.work_ip, self.work_port))
-            print("Gateway is listenging on: "+self.work_ip, self.work_port)
+            print(f"Gateway is listenging on: {self.work_ip}:{self.work_port}")
         except Exception as e:
             print("Error binding socket:" + e)
             return
         
         while True:
             received_data: dict = self.receive_data()
-
-            if received_data == "exit":
-                print("Shutting down Gateway...")
-                break
 
             f_name = received_data['f_name']
             if f_name in self.api_workers:

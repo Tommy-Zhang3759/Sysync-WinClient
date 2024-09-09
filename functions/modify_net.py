@@ -1,7 +1,9 @@
 import os
 import win32api
+import APIService
+import logging
 
-def set_ip_static(interface_name, ip_address, subnet_mask, gateway, dns):
+def set_static_ip(interface_name: str, ip_address: str, subnet_mask: str, gateway: str, dns: str):
     # 使用 netsh 命令设置IP地址、子网掩码和网关
     for_ip = f'netsh interface ip set address name="{interface_name}" static {ip_address} {subnet_mask} {gateway} 1'
     for_dns = f'netsh interface ip set address name="{interface_name}" {dns}'
@@ -15,22 +17,23 @@ def set_ip_static(interface_name, ip_address, subnet_mask, gateway, dns):
 
 # 示例：设置名为"Ethernet"的网卡的IP地址
 
-def set_dhcp(interface_name, dns="", dhcp_dns=False):
-    for_dns = ""
+def set_dhcp(interface_name: str, dhcp_dns: bool=True):
     if dhcp_dns:
-        for_dns = f'netsh interface ip set address name="{interface_name}" source=dhcp'
-    elif dns == "":
-        raise ValueError
+        for_dns = f'netsh interface ip set address name={interface_name} source=dhcp'
     try:
         os.system(for_dns)
     except Exception as e:
         win32api.MessageBox(0, f"设置DHCP失败: {str(e)}", "错误", 0x00001000)
 
-def set_dns(interface_name, dns):
+def set_dns(interface_name: str="", dns: str="", hdcp_dns: bool=False):
     # 使用 netsh 命令设置IP地址、子网掩码和网关
-    for_dns = f'netsh interface ip set address name="{interface_name}" {dns}'
+    if hdcp_dns == True:
+        for_dns = f'netsh interface ip set dns name={interface_name} source=dhcp'
+    else:
+        for_dns = f'netsh interface ip set address name={interface_name} {dns} register=primary'
     try:
         os.system(for_dns)
     except Exception as e:
         win32api.MessageBox(0, f"设置IP地址失败: {str(e)}", "错误", 0x00001000)
     return
+

@@ -1,15 +1,11 @@
 import winreg
-import os
 import platform
 import uuid
-import json
 
 import logging
 import traceback
 
 import socket
-
-import APIService.APIGateway
 
 def get_device_info():
     try:
@@ -43,45 +39,3 @@ def set_host_name(new_hostname):
         logging.debug(traceback.format_exc())
 
 
-class update_host_name(APIService.APIGateway.UDPAPIWorker):
-    def __init__(self):
-        super().__init__()
-        self.name = "updateHostName"
-    
-    def run(self):
-        mac, ip, current_host_name = get_device_info()
-        mess = self.read_message()
-        try:
-            self.gateway.send_data(
-                json.dumps({
-                    "f_name": "hostNameReq",
-                    "mac": mac,
-                    "ip": ip,
-                    "current_host_name": current_host_name
-                }),
-                target_ip=mess["host_ip"],
-                target_port=mess["host_port"]
-            )
-        except Exception as e:
-            raise e
-        
-        return 0
-    
-class host_name_offer(APIService.APIGateway.UDPAPIWorker):
-    def __init__(self):
-        super().__init__()
-        self.name = "hostNameOffer"
-    
-    def run(self):
-        try:
-            response = self.read_message()
-            print(f'Response from server: {response}')
-            print(response["host_name"])
-            set_host_name(response["host_name"])
-        except Exception as e:
-            logging.error
-            logging.debug("An error occurred: %s", str(e))
-
-            raise e
-        
-        return 0
