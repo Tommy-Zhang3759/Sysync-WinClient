@@ -9,7 +9,7 @@ import traceback
 class run_cmd(UDPAPIWorker):
     def __init__(self):
         super().__init__()
-        self.name = "runCommand"
+        self.name = "run_command"
     
     def run(self):
         from run_command import run_command
@@ -32,7 +32,7 @@ class run_cmd(UDPAPIWorker):
 class update_host_name(UDPAPIWorker):
     def __init__(self):
         super().__init__()
-        self.name = "updateHostName"
+        self.name = "update_host_name"
     
     def run(self):
         from modify_host_name import get_device_info
@@ -60,7 +60,7 @@ class update_host_name(UDPAPIWorker):
 class host_name_offer(UDPAPIWorker):
     def __init__(self):
         super().__init__()
-        self.name = "hostNameOffer"
+        self.name = "host_name_offer"
     
     def run(self):
         from modify_host_name import set_host_name
@@ -79,7 +79,7 @@ class host_name_offer(UDPAPIWorker):
 class net_ip_dhcp(UDPAPIWorker):
     def __init__(self):
         super().__init__()
-        self.name = "netIpDhcp"
+        self.name = "net_ip_dhcp"
     
     def run(self):
         from modify_net import set_dhcp
@@ -100,7 +100,7 @@ class net_ip_dhcp(UDPAPIWorker):
 class net_ip_static(UDPAPIWorker):
     def __init__(self):
         super().__init__()
-        self.name = "netStaticIp"
+        self.name = "net_static_ip"
     
     def run(self):
         from modify_net import set_static_ip
@@ -123,7 +123,7 @@ class net_ip_static(UDPAPIWorker):
 class net_dns_static(UDPAPIWorker):
     def __init__(self):
         super().__init__()
-        self.name = "netDnsStatic"
+        self.name = "net_dns_static"
     
     def run(self):
         from modify_net import set_dns
