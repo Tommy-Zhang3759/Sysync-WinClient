@@ -1,12 +1,14 @@
 import winreg
 
+
 class regKey:
     def __init__(self, name, value, type):
         self.name = name
         self.value = value
         self.type = type
 
-def list_registry(base_key, sub_key): # listing subkeys and values
+
+def list_registry(base_key, sub_key):  # listing subkeys and values
     values = []
     subkeys = []
     try:
@@ -33,11 +35,12 @@ def list_registry(base_key, sub_key): # listing subkeys and values
                 except OSError:
                     break
         return values, subkeys
-    
+
     except FileNotFoundError as e:
         raise e
 
-def find_value(base_key, sub_key, name): # get value
+
+def find_value(base_key, sub_key, name):  # get value
     try:
         with winreg.OpenKey(base_key, sub_key) as key:
             print(f"Listing values of {key}:")
@@ -53,6 +56,7 @@ def find_value(base_key, sub_key, name): # get value
     except FileNotFoundError as e:
         raise e
 
+
 def set_value(base_key, sub_key, name, k):
     try:
         with winreg.OpenKey(base_key, sub_key) as key:
@@ -64,4 +68,3 @@ def set_value(base_key, sub_key, name, k):
 # if __name__ == "__main__":
 #     base_key = winreg.HKEY_LOCAL_MACHINE
 #     sub_key = r"SOFTWARE\Microsoft\Windows\CurrentVersion\StillImage"
-

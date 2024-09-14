@@ -9,7 +9,7 @@ def get_device_info():
 
     # 获取网卡的 MAC 地址
     mac = ':'.join(['{:02x}'.format((uuid.getnode() >> elements) & 0xff)
-                    for elements in range(0, 8*6, 8)][::-1])
+                    for elements in range(0, 8 * 6, 8)][::-1])
 
     # 获取 IP 地址
     try:
@@ -19,6 +19,7 @@ def get_device_info():
         ip_address = "Unknown"
 
     return mac, ip_address, device_name
+
 
 def send_device_info(server_host, server_port):
     mac, ip, host_name = get_device_info()
@@ -30,7 +31,8 @@ def send_device_info(server_host, server_port):
 
     client_socket.close()
 
+
 if __name__ == "__main__":
     server_host = '192.168.60.9'  # 替换为服务器的IP地址
-    server_port = 12345           # 替换为服务器使用的端口号
+    server_port = 12345  # 替换为服务器使用的端口号
     send_device_info(server_host, server_port)

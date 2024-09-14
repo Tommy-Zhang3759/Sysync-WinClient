@@ -1,15 +1,16 @@
 import subprocess
 
+
 def run_command(command: str):
     try:
         # 使用 subprocess.run 捕获输出和错误
-        result = subprocess.run(command, shell=True, check=True, 
+        result = subprocess.run(command, shell=True, check=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        
+
         # 返回命令的输出、错误信息和退出码
         return {
-            'stdout': result.stdout,    # 标准输出
-            'stderr': result.stderr,    # 标准错误
+            'stdout': result.stdout,  # 标准输出
+            'stderr': result.stderr,  # 标准错误
             'returncode': result.returncode  # 退出状态码
         }
 

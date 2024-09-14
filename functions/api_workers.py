@@ -4,13 +4,11 @@ import logging
 import traceback
 
 
-
-
 class run_cmd(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "run_command"
-    
+
     def run(self):
         from run_command import run_command
         try:
@@ -27,13 +25,11 @@ class run_cmd(UDPAPIWorker):
         return 0
 
 
-
-
 class update_host_name(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "update_host_name"
-    
+
     def run(self):
         from modify_host_name import get_device_info
         mac, ip, current_host_name = get_device_info()
@@ -54,14 +50,15 @@ class update_host_name(UDPAPIWorker):
             logging.debug("An error occurred: %s", str(e))
             logging.debug(traceback.format_exc())
             return -1
-        
+
         return 0
-    
+
+
 class host_name_offer(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "host_name_offer"
-    
+
     def run(self):
         from modify_host_name import set_host_name
         try:
@@ -75,12 +72,11 @@ class host_name_offer(UDPAPIWorker):
         return 0
 
 
-
 class net_ip_dhcp(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "net_ip_dhcp"
-    
+
     def run(self):
         from modify_net import set_dhcp
         try:
@@ -96,19 +92,20 @@ class net_ip_dhcp(UDPAPIWorker):
             logging.debug(traceback.format_exc())
             return -1
         return 0
-    
+
+
 class net_ip_static(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "net_static_ip"
-    
+
     def run(self):
         from modify_net import set_static_ip
         try:
             mess = self.read_message()
             set_static_ip(
-                mess["interface_name"], 
-                mess["ip_address"], 
+                mess["interface_name"],
+                mess["ip_address"],
                 mess["subnet_mask"],
                 mess["gateway"],
                 mess["dns"]
@@ -119,12 +116,13 @@ class net_ip_static(UDPAPIWorker):
             logging.debug(traceback.format_exc())
             return -1
         return 0
-    
+
+
 class net_dns_static(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "net_dns_static"
-    
+
     def run(self):
         from modify_net import set_dns
         try:
@@ -140,11 +138,10 @@ class net_dns_static(UDPAPIWorker):
                     mess["interface_name"],
                     mess["dns"]
                 )
-            
+
         except Exception as e:
             logging.error(f"Error handling API {self.name}: {e}")
             logging.debug("An error occurred: %s", str(e))
             logging.debug(traceback.format_exc())
             return -1
         return 0
-    
