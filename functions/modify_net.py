@@ -14,7 +14,6 @@ def set_static_ip(interface_name: str, ip_address: str, subnet_mask: str, gatewa
         os.system(for_dns)
     except Exception as e:
         win32api.MessageBox(0, f"设置IP地址失败: {str(e)}", "错误", 0x00001000)
-    return
 
 
 # 示例：设置名为"Ethernet"的网卡的IP地址

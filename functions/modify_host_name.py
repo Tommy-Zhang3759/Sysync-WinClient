@@ -9,6 +9,10 @@ import socket
 
 
 def get_device_info():
+    """
+    get device information
+    :return: mac address, ip address and device name
+    """
     try:
         device_name = platform.node()
         mac = ':'.join(['{:02x}'.format((uuid.getnode() >> elements) & 0xff)
