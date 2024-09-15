@@ -98,7 +98,7 @@ class SysyncWinClient():
 		gateway_thread.add_worker(functions.api_workers.host_name_offer())
 		gateway_thread.add_worker(functions.api_workers.update_host_name())
 		gateway_thread.add_worker(functions.api_workers.net_ip_dhcp())
-		gateway_thread.add_worker(functions.api_workers.run_cmd())
+		gateway_thread.add_worker(functions.api_workers.RunCmd())
 		gateway_thread.add_worker(functions.api_workers.net_ip_static())
 		gateway_thread.add_worker(functions.api_workers.net_dns_static())
 

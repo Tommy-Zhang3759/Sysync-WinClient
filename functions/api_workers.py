@@ -6,7 +6,7 @@ import traceback
 
 
 
-class run_cmd(UDPAPIWorker):
+class RunCmd(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "run_command"
