@@ -2,8 +2,6 @@ import win32serviceutil
 import win32service
 import win32event
 import servicemanager
-import os
-import sys
 import logging
 import traceback
 
@@ -37,21 +35,34 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 		"local_port"
 	]
 
-	def __init__(self, args):
-		if args == "debug":
-			self._debug_mode_ = True
+	def __init__(self, log_level: str="INFO", **args):
+		self._debug_mode_ = DEBUG_MODE
+
+		if self._debug_mode_:
+			logging.basicConfig(
+				filename="./log.txt",
+				level=logging.DEBUG,
+				format='%(asctime)s - %(levelname)s - %(message)s'
+			)
+		else:
+			if log_level in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+				logging.basicConfig(
+					filename="./log.txt",
+					level=logging.getLevelName(log_level),
+					format='%(asctime)s - %(levelname)s - %(message)s'
+				)
+			else:
+				raise ValueError("Invalid logging sensitive")
 		
-		if self._debug_mode_ != True:
+		if self._debug_mode_ == False:
 			win32serviceutil.ServiceFramework.__init__(self, args)
+			logging.error("Failed to run as service")
+
 		self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
 
 		self.is_running = True
 
-		logging.basicConfig(
-            filename="./log.txt",
-            level=logging.DEBUG,
-            format='%(asctime)s - %(levelname)s - %(message)s'
-        )
+
 		self.ReadSettings(SETTINGS_FILE)
 
 	def ReadSettings(self, path):
@@ -124,13 +135,15 @@ class SysyncWinClient(win32serviceutil.ServiceFramework):
 		# eventListener.join()
 
 if __name__ == '__main__':
-    # 当作为服务运行时
-    if DEBUG_MODE == False:
-        win32serviceutil.HandleCommandLine(SysyncWinClient)
-    else:
+
+	if DEBUG_MODE:
+		service = SysyncWinClient('DEBUG')
+		service.SvcDoRun()  # 直接调用服务的运行逻辑
+		
+	else:
+		win32serviceutil.HandleCommandLine(SysyncWinClient)
         # 以本地方式调试
-        service = SysyncWinClient('debug')
-        service.SvcDoRun()  # 直接调用服务的运行逻辑
+		
 
 # 你可以在这里直接调用测试代码，比如：
 # service = SysyncWinClient('debug')

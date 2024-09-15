@@ -3,6 +3,8 @@ import queue
 import time
 import json
 import socket
+import logging
+import traceback
 
 LISTEN_PORT = 6003
 SERVER_PORT = 6004
@@ -58,9 +60,10 @@ class UDPGatewayThread(threading.Thread):
     def run(self):
         try:
             self.gateway_rec_sock.bind((self.work_ip, self.work_port))
-            print(f"Gateway is listenging on: {self.work_ip}:{self.work_port}")
+            logging.info(f"Gateway is listenging on: {self.work_ip}:{self.work_port}")
         except Exception as e:
-            print("Error binding socket:" + e)
+            logging.error("Error binding socket:" + e)
+            logging.debug(traceback.format_exc())
             return
         
         while True:

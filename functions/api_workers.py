@@ -20,8 +20,7 @@ class run_cmd(UDPAPIWorker):
                 "return": run_command(response["command"])
             }))
         except Exception as e:
-            logging.error(f"Error handling API {self.name}: {e}")
-            logging.debug("An error occurred: %s", str(e))
+            logging.error(f"Error handling API {self.name}: {str(e)}")
             logging.debug(traceback.format_exc())
             return -1
         return 0
@@ -35,13 +34,13 @@ class update_host_name(UDPAPIWorker):
         self.name = "update_host_name"
     
     def run(self):
-        from modify_host_name import get_device_info
+        from functions.modify_host_name import get_device_info
         mac, ip, current_host_name = get_device_info()
         mess = self.read_message()
         try:
             self.gateway.send_data(
                 json.dumps({
-                    "f_name": "hostNameReq",
+                    "f_name": "host_name_req",
                     "mac": mac,
                     "ip": ip,
                     "current_host_name": current_host_name
@@ -50,8 +49,7 @@ class update_host_name(UDPAPIWorker):
                 target_port=mess["host_port"]
             )
         except Exception as e:
-            logging.error(f"Error handling API {self.name}: {e}")
-            logging.debug("An error occurred: %s", str(e))
+            logging.error(f"Error handling API {self.name}: {str(e)}")
             logging.debug(traceback.format_exc())
             return -1
         
@@ -63,13 +61,12 @@ class host_name_offer(UDPAPIWorker):
         self.name = "host_name_offer"
     
     def run(self):
-        from modify_host_name import set_host_name
+        from functions.modify_host_name import set_host_name
         try:
             response = self.read_message()
             set_host_name(response["host_name"])
         except Exception as e:
-            logging.error(f"Error handling API {self.name}: {e}")
-            logging.debug("An error occurred: %s", str(e))
+            logging.error(f"Error handling API {self.name}: {str(e)}")
             logging.debug(traceback.format_exc())
             return -1
         return 0
@@ -91,8 +88,7 @@ class net_ip_dhcp(UDPAPIWorker):
                 set_dhcp(response["interface_name"])
 
         except Exception as e:
-            logging.error(f"Error handling API {self.name}: {e}")
-            logging.debug("An error occurred: %s", str(e))
+            logging.error(f"Error handling API {self.name}: {str(e)}")
             logging.debug(traceback.format_exc())
             return -1
         return 0
@@ -114,8 +110,7 @@ class net_ip_static(UDPAPIWorker):
                 mess["dns"]
             )
         except Exception as e:
-            logging.error(f"Error handling API {self.name}: {e}")
-            logging.debug("An error occurred: %s", str(e))
+            logging.error(f"Error handling API {self.name}: {str(e)}")
             logging.debug(traceback.format_exc())
             return -1
         return 0
@@ -142,8 +137,7 @@ class net_dns_static(UDPAPIWorker):
                 )
             
         except Exception as e:
-            logging.error(f"Error handling API {self.name}: {e}")
-            logging.debug("An error occurred: %s", str(e))
+            logging.error(f"Error handling API {self.name}: {str(e)}")
             logging.debug(traceback.format_exc())
             return -1
         return 0
