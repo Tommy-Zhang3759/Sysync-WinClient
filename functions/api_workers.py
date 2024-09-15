@@ -28,7 +28,7 @@ class RunCmd(UDPAPIWorker):
 
 
 
-class update_host_name(UDPAPIWorker):
+class UpdateHostName(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "update_host_name"
@@ -55,7 +55,7 @@ class update_host_name(UDPAPIWorker):
         
         return 0
     
-class host_name_offer(UDPAPIWorker):
+class HostNameOffer(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "host_name_offer"
@@ -73,7 +73,7 @@ class host_name_offer(UDPAPIWorker):
 
 
 
-class net_ip_dhcp(UDPAPIWorker):
+class NetIPDHCP(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "net_ip_dhcp"
@@ -93,7 +93,7 @@ class net_ip_dhcp(UDPAPIWorker):
             return -1
         return 0
     
-class net_ip_static(UDPAPIWorker):
+class NetIPStatic(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "net_static_ip"
@@ -115,7 +115,7 @@ class net_ip_static(UDPAPIWorker):
             return -1
         return 0
     
-class net_dns_static(UDPAPIWorker):
+class NetDNSStatic(UDPAPIWorker):
     def __init__(self):
         super().__init__()
         self.name = "net_dns_static"
