@@ -22,7 +22,10 @@ def get_device_info():
     
     return mac, ip_address, device_name
 
-def set_host_name(new_hostname):
+def set_host_name(new_hostname: str):
+    if new_hostname == '' or new_hostname == None:
+        logging.debug("Trying to set an empty host name")
+        return
     try:
         key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Services\Tcpip\Parameters', 0, winreg.KEY_ALL_ACCESS)
         
