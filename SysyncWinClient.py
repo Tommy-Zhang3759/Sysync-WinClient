@@ -13,10 +13,10 @@ DEBUG_MODE = True
 
 class SysyncWinClient():
 
-	_server_ip_: str = "127.0.0.1"
+	_server_ip_: str = "255.255.255.255"
 	_server_port_: int = -1
 	_local_ip_: str = "0.0.0.0"
-	_local_port_ = 6003
+	_local_port_: int = 6003
 	_resident_socket_ = None
 
 	_debug_mode_ = False
@@ -53,6 +53,10 @@ class SysyncWinClient():
 
 		self.ReadSettings(SETTINGS_FILE)
 
+		
+
+
+
 	def ReadSettings(self, path):
 		try:
 			with open(path, 'r') as f:
@@ -64,18 +68,20 @@ class SysyncWinClient():
 		
 		i = 0
 		try:
-			self._server_ip_ = settings['server_ip']; i += 1
-			self._server_port_ = settings["server_port"]; i += 1
-			self._local_ip_ = settings["local_ip"]; i += 1
-			self._local_port_ = settings["local_port"]; i += 1
+			self._server_ip_ = settings['server_ip'] if settings['server_ip'] else self._server_ip_; i += 1
+			self._server_port_ = settings["server_port"] if settings["server_port"] else self._server_port_; i += 1
+			self._local_ip_ = settings["local_ip"] if settings["local_ip"] else self._local_ip_; i += 1
+			self._local_port_ = settings["local_port"] if settings["local_port"] else self._local_port_; i += 1
 		except KeyError:
 			logging.error(f"Can not find setting key: {self._setting_keys_[i]}")
 			self.SvcStop()
 		except Exception as e:
-			logging.error("Unexpected Error")
+			logging.error("Unexpected Error while reading settings")
 			logging.debug(traceback.format_exc())
 			self.SvcStop()
-			raise e 
+		finally:
+			if self._server_ip_ == None or self._server_port_ == None:
+				logging.info("Unsetted server information")
 		logging.info("Read settings: Success")
 		return True
 	
