@@ -147,12 +147,15 @@ class SetServerInfo(UDPAPIWorker):
         self.name = "set_server_info"
     
     def run(self):
-        from SysyncWinClient import service
+        from SysyncWinClient import service, SETTINGS_FILE
 
         try:
             mess = self.read_message()
             service._server_ip_ = mess["server_ip"]
             service._server_port_ = mess["server_port"]
+
+            service.edit_settings(SETTINGS_FILE, "server_ip", service._server_ip_)
+            service.edit_settings(SETTINGS_FILE, "server_port", service._server_port_)
             
         except Exception as e:
             logging.error(f"Error handling API {self.name}: {str(e)}")
