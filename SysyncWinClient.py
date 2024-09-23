@@ -130,7 +130,7 @@ class SysyncWinClient():
 		gateway_thread.add_worker(functions.api_workers.RunCmd())
 		gateway_thread.add_worker(functions.api_workers.NetIPStatic())
 		gateway_thread.add_worker(functions.api_workers.NetDNSStatic())
-		gateway_thread.add_worker(functions.api_workers.SetServerInfo())
+		gateway_thread.add_worker(functions.api_workers.SetServerInfo(self.edit_settings))
 
 
 		gateway_thread.start()

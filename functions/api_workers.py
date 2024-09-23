@@ -142,20 +142,22 @@ class NetDNSStatic(UDPAPIWorker):
         return 0
     
 class SetServerInfo(UDPAPIWorker):
-    def __init__(self):
+    def __init__(self, edit_func):
         super().__init__()
         self.name = "set_server_info"
+        assert callable(edit_func), "should be a function"
+        self.edit_func = edit_func
     
     def run(self):
-        from SysyncWinClient import service, SETTINGS_FILE
+        from SysyncWinClient import SETTINGS_FILE
 
         try:
             mess = self.read_message()
-            service._server_ip_ = mess["server_ip"]
-            service._server_port_ = mess["server_port"]
 
-            service.edit_settings(SETTINGS_FILE, "server_ip", service._server_ip_)
-            service.edit_settings(SETTINGS_FILE, "server_port", service._server_port_)
+            self.edit_func(SETTINGS_FILE, "server_ip", mess["server_ip"])
+            self.edit_func(SETTINGS_FILE, "server_port", mess["server_port"])
+
+            logging.info(f"server info has been updated to {mess["server_ip"]}:{mess["server_port"]}")
             
         except Exception as e:
             logging.error(f"Error handling API {self.name}: {str(e)}")
