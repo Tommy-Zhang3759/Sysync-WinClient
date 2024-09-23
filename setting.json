@@ -1,6 +1,6 @@
 {
-    "server_ip": "127.0.0.1",
-    "server_port": 6004,
+    "server_ip": null,
+    "server_port": null,
     "local_ip": "0.0.0.0",
     "local_port": 6003
 }
