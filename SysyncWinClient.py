@@ -51,40 +51,63 @@ class SysyncWinClient():
 		self.is_running = True
 
 
-		self.ReadSettings(SETTINGS_FILE)
+		self.read_settings(SETTINGS_FILE, init=True)
 
 		
 
 
 
-	def ReadSettings(self, path):
+	def read_settings(self, path: str, key: str = None, init: bool = False):
 		try:
 			with open(path, 'r') as f:
 				settings = json.load(f)
 		except Exception as e:
-			logging.error("Can not open config file")
-			self.SvcStop()
+			logging.error("Can not open setting file")
 			raise e
 		
-		i = 0
-		try:
-			self._server_ip_ = settings['server_ip'] if settings['server_ip'] else self._server_ip_; i += 1
-			self._server_port_ = settings["server_port"] if settings["server_port"] else self._server_port_; i += 1
-			self._local_ip_ = settings["local_ip"] if settings["local_ip"] else self._local_ip_; i += 1
-			self._local_port_ = settings["local_port"] if settings["local_port"] else self._local_port_; i += 1
-		except KeyError:
-			logging.error(f"Can not find setting key: {self._setting_keys_[i]}")
-			self.SvcStop()
-		except Exception as e:
-			logging.error("Unexpected Error while reading settings")
-			logging.debug(traceback.format_exc())
-			self.SvcStop()
-		finally:
-			if self._server_ip_ == None or self._server_port_ == None:
-				logging.info("Unsetted server information")
-		logging.info("Read settings: Success")
-		return True
+		if init:
+			i = 0
+			try:
+				self._server_ip_ = settings['server_ip'] if settings['server_ip'] else self._server_ip_; i += 1
+				self._server_port_ = settings["server_port"] if settings["server_port"] else self._server_port_; i += 1
+				self._local_ip_ = settings["local_ip"] if settings["local_ip"] else self._local_ip_; i += 1
+				self._local_port_ = settings["local_port"] if settings["local_port"] else self._local_port_; i += 1
+				logging.info("Read settings: Success")
+			except KeyError:
+				logging.error(f"Can not find setting key: {self._setting_keys_[i]}")
+			except Exception as e:
+				logging.error("Unexpected Error while reading settings")
+				logging.debug(traceback.format_exc())
+			finally:
+				if self._server_ip_ == None or self._server_port_ == None:
+					logging.info("Unsetted server information")
+			return True
+		else:
+			try:
+				if key == None:
+					raise KeyError
+				else:
+					return settings[key]
+			except Exception as e:
+				raise e
 	
+	def edit_settings(self, path: str, key: str, value):
+		try:
+			with open(path, 'r') as f:
+				settings = json.load(f)
+		except Exception as e:
+			logging.error("Can not open setting file")
+			raise e
+		settings[key] = value
+
+		try:
+			with open(path, 'w') as f:
+				json.dump(settings, f, indent=4)
+		except Exception as e:
+			logging.error("Failed to write to setting file")
+			raise e
+
+
 	def SvcStop(self):
 		self.is_running = False
 		try:
@@ -107,6 +130,7 @@ class SysyncWinClient():
 		gateway_thread.add_worker(functions.api_workers.RunCmd())
 		gateway_thread.add_worker(functions.api_workers.NetIPStatic())
 		gateway_thread.add_worker(functions.api_workers.NetDNSStatic())
+		gateway_thread.add_worker(functions.api_workers.SetServerInfo())
 
 
 		gateway_thread.start()
