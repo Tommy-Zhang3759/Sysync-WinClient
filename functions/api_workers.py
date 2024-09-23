@@ -4,7 +4,6 @@ import logging
 import traceback
 
 
-
 class RunCmd(UDPAPIWorker):
     def __init__(self):
         super().__init__()
@@ -23,8 +22,6 @@ class RunCmd(UDPAPIWorker):
             logging.debug(traceback.format_exc())
             return -1
         return 0
-
-
 
 
 class UpdateHostName(UDPAPIWorker):
@@ -69,7 +66,6 @@ class HostNameOffer(UDPAPIWorker):
             logging.debug(traceback.format_exc())
             return -1
         return 0
-
 
 
 class NetIPDHCP(UDPAPIWorker):
@@ -146,7 +142,7 @@ class SetServerInfo(UDPAPIWorker):
         self.name = "set_server_info"
         assert callable(edit_func), "should be a function"
         self.edit_func = edit_func
-    
+
     def run(self):
         from SysyncWinClient import SETTINGS_FILE
 
