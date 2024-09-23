@@ -62,7 +62,7 @@ class UDPGatewayThread(threading.Thread):
             self.gateway_rec_sock.bind((self.work_ip, self.work_port))
             logging.info(f"Gateway is listenging on: {self.work_ip}:{self.work_port}")
         except Exception as e:
-            logging.error("Error binding socket:" + e)
+            logging.error("Error binding socket:" + str(e))
             logging.debug(traceback.format_exc())
             return
         
