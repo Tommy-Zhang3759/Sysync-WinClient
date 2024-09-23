@@ -140,7 +140,6 @@ class NetDNSStatic(UDPAPIWorker):
             logging.debug(traceback.format_exc())
             return -1
         return 0
-    
 class SetServerInfo(UDPAPIWorker):
     def __init__(self, edit_func):
         super().__init__()
@@ -157,7 +156,7 @@ class SetServerInfo(UDPAPIWorker):
             self.edit_func(SETTINGS_FILE, "server_ip", mess["server_ip"])
             self.edit_func(SETTINGS_FILE, "server_port", mess["server_port"])
 
-            logging.info(f"server info has been updated to {mess["server_ip"]}:{mess["server_port"]}")
+            logging.info(f"server info has been updated to {mess['server_ip']}:{mess['server_port']}")
             
         except Exception as e:
             logging.error(f"Error handling API {self.name}: {str(e)}")
