@@ -10,7 +10,7 @@ class RunCmd(UDPAPIWorker):
         self.name = "run_command"
     
     def run(self):
-        from run_command import run_command
+        from func.run_command import run_command
         try:
             response = self.read_message()
             self.gateway.send_data(json.dumps({
@@ -30,7 +30,7 @@ class UpdateHostName(UDPAPIWorker):
         self.name = "update_host_name"
     
     def run(self):
-        from functions.modify_host_name import get_device_info
+        from func.modify_host_name import get_device_info
         mac, ip, current_host_name = get_device_info()
         mess = self.read_message()
         try:
@@ -57,7 +57,7 @@ class HostNameOffer(UDPAPIWorker):
         self.name = "host_name_offer"
     
     def run(self):
-        from functions.modify_host_name import set_host_name
+        from func.modify_host_name import set_host_name
         try:
             response = self.read_message()
             set_host_name(response["host_name"])
@@ -74,7 +74,7 @@ class NetIPDHCP(UDPAPIWorker):
         self.name = "net_ip_dhcp"
     
     def run(self):
-        from modify_net import set_dhcp
+        from func.modify_net import set_dhcp
         try:
             response = self.read_message()
             if "dhcp_dns" in response:
@@ -94,7 +94,7 @@ class NetIPStatic(UDPAPIWorker):
         self.name = "net_static_ip"
     
     def run(self):
-        from modify_net import set_static_ip
+        from func.modify_net import set_static_ip
         try:
             mess = self.read_message()
             set_static_ip(
@@ -116,7 +116,7 @@ class NetDNSStatic(UDPAPIWorker):
         self.name = "net_dns_static"
     
     def run(self):
-        from modify_net import set_dns
+        from func.modify_net import set_dns
         try:
             mess = self.read_message()
             if "hdcp_dns" in mess:

@@ -4,8 +4,8 @@ import traceback
 import json
 
 import APIService.APIGateway
-import functions.api_workers
-import functions.modify_host_name
+import APIService.api_workers
+import APIService.api_workers
 
 SETTINGS_FILE = "./setting.json"
 
@@ -124,13 +124,13 @@ class SysyncWinClient():
 
 	def main(self):
 		gateway_thread = APIService.APIGateway.UDPGatewayThread(self._local_ip_, self._local_port_)
-		gateway_thread.add_worker(functions.api_workers.HostNameOffer())
-		gateway_thread.add_worker(functions.api_workers.UpdateHostName())
-		gateway_thread.add_worker(functions.api_workers.NetIPDHCP())
-		gateway_thread.add_worker(functions.api_workers.RunCmd())
-		gateway_thread.add_worker(functions.api_workers.NetIPStatic())
-		gateway_thread.add_worker(functions.api_workers.NetDNSStatic())
-		gateway_thread.add_worker(functions.api_workers.SetServerInfo(self.edit_settings))
+		gateway_thread.add_worker(APIService.api_workers.HostNameOffer())
+		gateway_thread.add_worker(APIService.api_workers.UpdateHostName())
+		gateway_thread.add_worker(APIService.api_workers.NetIPDHCP())
+		gateway_thread.add_worker(APIService.api_workers.RunCmd())
+		gateway_thread.add_worker(APIService.api_workers.NetIPStatic())
+		gateway_thread.add_worker(APIService.api_workers.NetDNSStatic())
+		gateway_thread.add_worker(APIService.api_workers.SetServerInfo(self.edit_settings))
 
 
 		gateway_thread.start()
