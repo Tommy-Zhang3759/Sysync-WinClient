@@ -33,6 +33,16 @@ class UpdateHostName(UDPAPIWorker):
         from func.modify_host_name import get_device_info
         mac, ip, current_host_name = get_device_info()
         mess = self.read_message()
+        target_ip:str; target_port:int
+        if "host_ip" not in mess:
+            target_ip = self.gateway.server_ip
+        else: 
+            target_ip = mess["host_ip"]
+        if "host_port" not in mess:
+            target_port = self.gateway.server_port
+        else :
+            target_port = self.gateway.server_port
+
         try:
             self.gateway.send_data(
                 json.dumps({
@@ -41,8 +51,8 @@ class UpdateHostName(UDPAPIWorker):
                     "ip": ip,
                     "current_host_name": current_host_name
                 }),
-                target_ip=mess["host_ip"],
-                target_port=mess["host_port"]
+                target_ip=target_ip,
+                target_port=target_port
             )
         except Exception as e:
             logging.error(f"Error handling API {self.name}: {str(e)}")
