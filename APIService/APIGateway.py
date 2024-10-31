@@ -19,6 +19,7 @@ class UDPAPIWorker():
         self.gateway: UDPGatewayThread = None
 
     def run(self):
+        raise RuntimeError("Intentional error for template placeholder.")
         print(f"Thread {self.name} started.")
         while self.running:
             try:
@@ -40,17 +41,23 @@ class UDPAPIWorker():
 
     def stop(self):
         self.running = False
-        self.message_queue.put(None)  # 停止标志
+        self.message_queue.put(None)  # stop flag
 
-# Gateway 线程：负责分发任务
+# Gateway thread: route packages to workers
 class UDPGatewayThread(threading.Thread):
-    def __init__(self, ip: str, port: int, buffer_size: int = 1024):
+    def __init__(self, local_ip: str,
+                 local_port: int,
+                 server_ip:str, 
+                 server_port:int, 
+                 buffer_size: int = 1024):
         super().__init__()
         self.api_workers: dict[str, UDPAPIWorker] = {}
         self.gateway_rec_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.buffer_size = buffer_size
-        self.work_ip = ip
-        self.work_port = port
+        self.work_ip = local_ip
+        self.work_port = local_port
+        self.server_ip = server_ip
+        self.server_port = server_port
 
     def add_worker(self, w: UDPAPIWorker):
         w.gateway = self
@@ -93,4 +100,7 @@ class UDPGatewayThread(threading.Thread):
             return -1
 
         return 0
+    
+    def get_server_addr(self):
+        return
 
