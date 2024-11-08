@@ -123,7 +123,7 @@ class SysyncWinClient():
 		self.main()
 
 	def main(self):
-		gateway_thread = APIService.APIGateway.UDPGatewayThread(self._local_ip_, self._local_port_)
+		gateway_thread = APIService.APIGateway.UDPGatewayThread(self._local_ip_, self._local_port_, self._server_ip_, self._server_port_)
 		gateway_thread.add_worker(APIService.api_workers.HostNameOffer())
 		gateway_thread.add_worker(APIService.api_workers.UpdateHostName())
 		gateway_thread.add_worker(APIService.api_workers.NetIPDHCP())

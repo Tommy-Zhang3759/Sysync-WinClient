@@ -41,7 +41,7 @@ class UpdateHostName(UDPAPIWorker):
         if "host_port" not in mess:
             target_port = self.gateway.server_port
         else :
-            target_port = self.gateway.server_port
+            target_port = mess["host_port"]
 
         try:
             self.gateway.send_data(
