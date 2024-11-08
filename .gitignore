@@ -4,3 +4,4 @@ dist
 build
 *.spec
 .idea
+*.code-workspace
