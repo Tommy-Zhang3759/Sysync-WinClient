@@ -13,10 +13,14 @@ class RunCmd(UDPAPIWorker):
         from func.run_command import run_command
         try:
             response = self.read_message()
-            self.gateway.send_data(json.dumps({
-                "f_name": "command_return",
-                "return": run_command(response["command"])
-            }))
+            self.gateway.send_data(
+                json.dumps({
+                    "f_name": "command_return",
+                    "return": run_command(response["command"])
+                    }),
+                None,
+                None
+                )
         except Exception as e:
             logging.error(f"Error handling API {self.name}: {str(e)}")
             logging.debug(traceback.format_exc())
@@ -164,6 +168,24 @@ class SetServerInfo(UDPAPIWorker):
 
             logging.info(f"server info has been updated to {mess['server_ip']}:{mess['server_port']}")
             
+        except Exception as e:
+            logging.error(f"Error handling API {self.name}: {str(e)}")
+            logging.debug(traceback.format_exc())
+            return -1
+        return 0
+
+class RunCommand(UDPAPIWorker):
+    def __init__(self):
+        super().__init__(self)
+        self.name = "run_command"
+    
+    def run(self):
+        from func.run_command import run_command
+        print(f"Thread {self.name} started.")
+        try:
+            mess = self.read_message()
+
+            print(run_command(mess["command"]))
         except Exception as e:
             logging.error(f"Error handling API {self.name}: {str(e)}")
             logging.debug(traceback.format_exc())

@@ -90,9 +90,13 @@ class UDPGatewayThread(threading.Thread):
         
         return json.loads(data.decode())
     
-    def send_data(self, message: str, target_ip: str = SERVER_PORT, target_port: int = SERVER_PORT):
+    def send_data(self, message: str, target_ip:str, target_port: int):
+        if target_ip == "" or target_ip == None:
+            target_ip = self.server_ip
+        if target_port == 0 or target_port == None:
+            target_port = self.server_port
         try:
-            self.gateway_rec_sock.sendto(message.encode(), (target_ip, target_port))
+            print(self.gateway_rec_sock.sendto(message.encode(), (target_ip, target_port)))
             print(f"Message '{message}' sent to {target_ip}:{target_port}")
         
         except Exception as e:
