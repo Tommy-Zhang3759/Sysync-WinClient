@@ -96,9 +96,17 @@ class UDPGatewayThread(threading.Thread):
         if target_port == 0 or target_port == None:
             target_port = self.server_port
         try:
-            print(self.gateway_rec_sock.sendto(message.encode(), (target_ip, target_port)))
-            print(f"Message '{message}' sent to {target_ip}:{target_port}")
-        
+            if not isinstance(message, str):
+                raise ValueError("message must be a string")
+            if not isinstance(target_ip, str):
+                raise ValueError("target_ip must be a string")
+            if not isinstance(target_port, int):
+                raise ValueError("target_port must be an integer")
+
+            encoded_message = message.encode()
+            self.gateway_rec_sock.sendto(encoded_message, (target_ip, target_port))
+            logging.debug(f"Message '{message}' sent to {target_ip}:{target_port}")
+            
         except Exception as e:
             print(f"Failed to send message: {e}")
             return -1
